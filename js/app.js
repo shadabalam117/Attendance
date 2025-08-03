@@ -1,18 +1,17 @@
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
 const today = new Date().toISOString().split("T")[0];
 document.getElementById("todayDate").innerText = today;
 
 const studentListEl = document.getElementById("studentList");
 const historyListEl = document.getElementById("historyList");
 
+// -------------------- Show Tabs ----------------------
 function showTab(tab) {
   document.getElementById("attendanceTab").style.display = tab === 'attendance' ? 'block' : 'none';
   document.getElementById("historyTab").style.display = tab === 'history' ? 'block' : 'none';
   if (tab === 'history') loadHistory();
 }
 
+// -------------------- Load Students ------------------
 function loadStudents() {
   studentListEl.innerHTML = "<p>Loading student list...</p>";
   db.collection("students").get().then(snapshot => {
@@ -35,6 +34,26 @@ function loadStudents() {
   });
 }
 
+// -------------------- Add Student ------------------
+function addStudent() {
+  const nameInput = document.getElementById("studentNameInput");
+  const name = nameInput.value.trim();
+
+  if (!name) {
+    alert("Please enter a valid student name.");
+    return;
+  }
+
+  db.collection("students").add({ name }).then(() => {
+    nameInput.value = "";
+    loadStudents(); // Reload student list
+  }).catch(err => {
+    console.error("Error adding student:", err);
+    alert("Failed to add student.");
+  });
+}
+
+// -------------------- Submit Attendance ------------------
 function submitAttendance() {
   const checkboxes = document.querySelectorAll("input[type=checkbox]");
   const batch = db.batch();
@@ -65,6 +84,7 @@ function submitAttendance() {
   });
 }
 
+// -------------------- Load Attendance History ------------------
 function loadHistory() {
   historyListEl.innerHTML = "<p>Loading history...</p>";
 
@@ -129,4 +149,5 @@ function loadHistory() {
   });
 }
 
+// -------------------- Initialize ------------------
 window.onload = loadStudents;
