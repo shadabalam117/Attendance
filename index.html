@@ -6,28 +6,31 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-  <script defer src="main.js"></script>
+  <script defer src="firebase-config.js"></script> <!-- Add your Firebase config separately -->
+  <script defer src="app.js"></script> <!-- Your main JS -->
 </head>
 <body>
   <div class="container">
     <h1>🏠 Hostel Attendance</h1>
 
-    <div class="actions">
-      <button onclick="markAttendance(true)">✅ Present</button>
-      <button onclick="markAttendance(false)">❌ Absent</button>
+    <!-- Add New Student -->
+    <div class="add-student">
+      <h3>➕ Add New Student</h3>
+      <input type="text" id="newStudentName" placeholder="Enter student name" />
+      <button onclick="addStudent()">Add Student</button>
+    </div>
+
+    <!-- Select Student(s) and Mark Attendance -->
+    <div class="attendance-actions">
+      <h3>🎯 Select Student</h3>
+      <ul id="studentList"></ul>
+
+      <button onclick="markAttendance(true)">✅ Mark Present</button>
+      <button onclick="markAttendance(false)">❌ Mark Absent</button>
       <button onclick="markHoliday()">📅 Mark Today as Holiday</button>
     </div>
 
-    <div class="add-student">
-      <input type="text" id="newStudentName" placeholder="New student name">
-      <button onclick="addStudent()">➕ Add Student</button>
-    </div>
-
-    <div class="list">
-      <h2>Students</h2>
-      <ul id="studentList"></ul>
-    </div>
-
+    <!-- Attendance History -->
     <div class="history">
       <h2>📜 Attendance History</h2>
       <div id="historyList"></div>
