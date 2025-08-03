@@ -1,25 +1,43 @@
 body {
   font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f5f7fa;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  background: white;
   padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-h1 {
-  font-size: 22px;
-  margin-bottom: 10px;
+h1, h2 {
+  text-align: center;
 }
 
-#tabs button {
-  padding: 8px;
-  margin-right: 5px;
-  margin-bottom: 15px;
-}
-
-#studentList div {
-  margin: 5px 0;
-}
-
-button {
-  margin-top: 10px;
+.actions button, .add-student button {
+  margin: 5px;
   padding: 10px;
   font-size: 16px;
+}
+
+.add-student {
+  display: flex;
+  margin: 10px 0;
+}
+
+.add-student input {
+  flex: 1;
+  padding: 8px;
+  margin-right: 10px;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 5px;
 }
