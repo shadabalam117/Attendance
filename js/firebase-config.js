@@ -1,5 +1,4 @@
 // firebase-config.js
-
 const firebaseConfig = {
   apiKey: "AIzaSyD0SMRG39Ojbu4hHl33YeY90Zpz7dSCleM",
   authDomain: "attendance-42c59.firebaseapp.com",
@@ -10,6 +9,6 @@ const firebaseConfig = {
   measurementId: "G-EBE7KW8M4C"
 };
 
-// Initialize Firebase
+// Initialize Firebase only once
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
