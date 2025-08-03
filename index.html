@@ -5,9 +5,23 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Attendance for Today</h1>
-  <div id="studentList"></div>
-  <button onclick="submitAttendance()">Submit Attendance</button>
+  <h1>📘 Hostel Attendance</h1>
+
+  <div id="tabs">
+    <button onclick="showTab('attendance')">Take Attendance</button>
+    <button onclick="showTab('history')">View History</button>
+  </div>
+
+  <div id="attendanceTab">
+    <h2>Today: <span id="todayDate"></span></h2>
+    <div id="studentList"></div>
+    <button onclick="submitAttendance()">Submit Attendance</button>
+  </div>
+
+  <div id="historyTab" style="display:none;">
+    <h2>Attendance History</h2>
+    <div id="historyList"></div>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
