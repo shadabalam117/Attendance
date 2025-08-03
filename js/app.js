@@ -1,153 +1,74 @@
-const today = new Date().toISOString().split("T")[0];
-document.getElementById("todayDate").innerText = today;
+let students = JSON.parse(localStorage.getItem('students')) || [];
+let attendance = JSON.parse(localStorage.getItem('attendance')) || {};
 
-const studentListEl = document.getElementById("studentList");
-const historyListEl = document.getElementById("historyList");
-
-// -------------------- Show Tabs ----------------------
-function showTab(tab) {
-  document.getElementById("attendanceTab").style.display = tab === 'attendance' ? 'block' : 'none';
-  document.getElementById("historyTab").style.display = tab === 'history' ? 'block' : 'none';
-  if (tab === 'history') loadHistory();
+function saveData() {
+  localStorage.setItem('students', JSON.stringify(students));
+  localStorage.setItem('attendance', JSON.stringify(attendance));
 }
 
-// -------------------- Load Students ------------------
-function loadStudents() {
-  studentListEl.innerHTML = "<p>Loading student list...</p>";
-  db.collection("students").get().then(snapshot => {
-    studentListEl.innerHTML = "";
-    snapshot.forEach(doc => {
-      const student = doc.data();
-      const div = document.createElement("div");
-      div.className = "student-entry";
-      div.innerHTML = `
-        <label>
-          <input type="checkbox" id="${doc.id}" />
-          ${student.name}
-        </label>
-      `;
-      studentListEl.appendChild(div);
-    });
-  }).catch(err => {
-    studentListEl.innerHTML = "<p>Error loading students.</p>";
-    console.error("Error loading students:", err);
-  });
-}
-
-// -------------------- Add Student ------------------
 function addStudent() {
-  const nameInput = document.getElementById("studentNameInput");
-  const name = nameInput.value.trim();
+  const name = document.getElementById('studentName').value.trim();
+  if (!name) return alert("Enter a name.");
+  if (students.includes(name)) return alert("Student already exists.");
 
-  if (!name) {
-    alert("Please enter a valid student name.");
-    return;
-  }
+  students.push(name);
+  saveData();
+  document.getElementById('studentName').value = '';
+  renderStudents();
+}
 
-  db.collection("students").add({ name }).then(() => {
-    nameInput.value = "";
-    loadStudents(); // Reload student list
-  }).catch(err => {
-    console.error("Error adding student:", err);
-    alert("Failed to add student.");
+function renderStudents() {
+  const list = document.getElementById('studentList');
+  list.innerHTML = '';
+
+  students.forEach(name => {
+    const li = document.createElement('li');
+    li.textContent = name;
+
+    const presentBtn = document.createElement('button');
+    presentBtn.textContent = 'Present';
+    presentBtn.onclick = () => markAttendance(name, 'Present');
+
+    const absentBtn = document.createElement('button');
+    absentBtn.textContent = 'Absent';
+    absentBtn.onclick = () => markAttendance(name, 'Absent');
+
+    li.appendChild(presentBtn);
+    li.appendChild(absentBtn);
+    list.appendChild(li);
   });
 }
 
-// -------------------- Submit Attendance ------------------
-function submitAttendance() {
-  const checkboxes = document.querySelectorAll("input[type=checkbox]");
-  const batch = db.batch();
-  let anyChecked = false;
+function markAttendance(name, status) {
+  const date = document.getElementById('date').value;
+  const isHoliday = document.getElementById('holidayCheckbox').checked;
 
-  checkboxes.forEach(cb => {
-    if (cb.checked) {
-      anyChecked = true;
-      const ref = db.collection("attendance").doc();
-      batch.set(ref, {
-        studentId: cb.id,
-        date: today
-      });
+  if (!date) return alert("Select a date first.");
+  if (isHoliday) return alert("It's a holiday.");
+
+  if (!attendance[date]) attendance[date] = {};
+  attendance[date][name] = status;
+
+  saveData();
+  alert(`${name} marked as ${status} on ${date}`);
+}
+
+function showHistory() {
+  const historyDiv = document.getElementById('history');
+  historyDiv.innerHTML = '<h3>Attendance History</h3>';
+
+  for (let date in attendance) {
+    const section = document.createElement('div');
+    section.innerHTML = `<strong>${date}</strong><br>`;
+
+    for (let name in attendance[date]) {
+      section.innerHTML += `${name}: ${attendance[date][name]}<br>`;
     }
-  });
 
-  if (!anyChecked) {
-    alert("⚠️ Please select at least one student.");
-    return;
+    section.innerHTML += '<hr>';
+    historyDiv.appendChild(section);
   }
-
-  batch.commit().then(() => {
-    alert("✅ Attendance submitted successfully!");
-    checkboxes.forEach(cb => cb.checked = false);
-  }).catch(err => {
-    console.error("Error submitting attendance:", err);
-    alert("❌ Failed to submit attendance.");
-  });
 }
 
-// -------------------- Load Attendance History ------------------
-function loadHistory() {
-  historyListEl.innerHTML = "<p>Loading history...</p>";
-
-  db.collection("students").get().then(studentSnap => {
-    const students = {};
-    studentSnap.forEach(doc => {
-      students[doc.id] = { name: doc.data().name, count: 0 };
-    });
-
-    db.collection("attendance").get().then(attSnap => {
-      const attendanceDates = new Set();
-
-      attSnap.forEach(doc => {
-        const data = doc.data();
-        attendanceDates.add(data.date);
-        if (students[data.studentId]) {
-          students[data.studentId].count += 1;
-        }
-      });
-
-      const totalDays = attendanceDates.size;
-      if (totalDays === 0) {
-        historyListEl.innerHTML = "<p>No attendance records found.</p>";
-        return;
-      }
-
-      let html = `<p>Total Days Recorded: <strong>${totalDays}</strong></p>`;
-      html += `
-        <table border="1" style="width:100%; text-align:center; border-collapse: collapse;">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Days Present</th>
-              <th>Attendance %</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      for (const id in students) {
-        const s = students[id];
-        const percent = ((s.count / totalDays) * 100).toFixed(1);
-        html += `
-          <tr>
-            <td>${s.name}</td>
-            <td>${s.count}</td>
-            <td>${percent}%</td>
-          </tr>
-        `;
-      }
-
-      html += `</tbody></table>`;
-      historyListEl.innerHTML = html;
-    }).catch(err => {
-      console.error("Error loading attendance:", err);
-      historyListEl.innerHTML = "<p>Failed to load attendance history.</p>";
-    });
-
-  }).catch(err => {
-    console.error("Error loading students:", err);
-    historyListEl.innerHTML = "<p>Failed to load student data.</p>";
-  });
-}
-
-// -------------------- Initialize ------------------
-window.onload = loadStudents;
+// Initial render
+renderStudents();
